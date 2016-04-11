@@ -1,8 +1,11 @@
 module LennardGas
 
+#using PyPlot, Colors, Distributions
+export flotante_a_entero, entero_a_flotante, 
+       fluctuacion_gaussiana, vector_fuerzas, 
+       paso_verlet, evolucion
 
-using PyPlot, Colors, Distributions
-
+###----------------------------------- Dominio Int64<->Float64 ---------------------------------------------###
 
 function flotante_a_entero(flotante:: Float64, lado_caja::Float64, cajitas::Int64)
     Int64(ceil(cajitas*flotante/lado_caja))
@@ -35,14 +38,7 @@ function entero_a_flotante(vector_entero:: Vector{Int64},lado_caja::Float64, caj
     vector_flotante
 end
 
-
-function fluctuacion_gaussiana(X_0, media = 0.0, desv_std = 0.1)
-    largo = length(X_0)
-    distribucion = Normal(media, desv_std)
-    fluctuaciones = rand(distribucion, largo)
-    X_0 + fluctuaciones
-end
-
+###----------------------------------- Cuadriculado y Periodicidad ---------------------------------------------###
 
 function teselador_mat(coordenadas::Vector{Int64}, divisiones::Int64, cajitas::Int64)
     #rc_entero = Int64(ceil(cajitas/divisiones))
@@ -81,12 +77,16 @@ function vecinos{T<:Int64}(zonas::Array{Vector{T},3}, i::T, j::T, k::T)
     vecindad
 end
 
+###----------------------------------- Fuerzas Lennard-Jones ---------------------------------------------###
 
+#Fuerza de Lennard-Jones
 function fuerza(r::Float64,  r_c::Float64)
     if r < 0.4 #Este número se encontró empíricamente
         return 48(0.4^(-13)-0.4^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
-    else
+    elseif r < r_c
         return 48(r^(-13)-r^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
+    else 
+        return 0
     end
 end
 
@@ -185,6 +185,7 @@ function vector_fuerzas{T<:Float64}(coord_enteras::Vector{Int64}, lado_caja::T,
     suma_fuerzas
 end
 
+###----------------------------------- Integradores y Pasos Temporales ---------------------------------------------###
 
 function paso_verlet{T<:Int64}(coord_previas::Vector{T}, coord_actuales::Vector{T},
                               lado_caja::Float64, cajitas::T, r_c::Float64, h::Float64)
@@ -201,6 +202,12 @@ function paso_verlet{T<:Int64}(coord_previas::Vector{T}, coord_actuales::Vector{
     coord_futuras
 end
 
+function fluctuacion_gaussiana(X_0, media = 0.0, desv_std = 0.1)
+    largo = length(X_0)
+    distribucion = Normal(media, desv_std)
+    fluctuaciones = rand(distribucion, largo)
+    X_0 + fluctuaciones
+end
 
 function evolucion{T<:Int64}(X0::Vector{T}, X1::Vector{T},
                             pasos::T, lado_caja::Float64,
