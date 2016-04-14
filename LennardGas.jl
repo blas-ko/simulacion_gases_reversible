@@ -1,8 +1,12 @@
 module LennardGas
 
+#using PyPlot, Colors,
+using  Distributions
+export flotante_a_entero, entero_a_flotante, 
+       fluctuacion_gaussiana, vector_fuerzas, 
+       paso_verlet, evolucion
 
-using PyPlot, Colors, Distributions
-
+###----------------------------------- Dominio Int64<->Float64 ---------------------------------------------###
 
 function flotante_a_entero(flotante:: Float64, lado_caja::Float64, cajitas::Int64)
     Int64(ceil(cajitas*flotante/lado_caja))
@@ -35,14 +39,7 @@ function entero_a_flotante(vector_entero:: Vector{Int64},lado_caja::Float64, caj
     vector_flotante
 end
 
-
-function fluctuacion_gaussiana(X_0, media = 0.0, desv_std = 0.1)
-    largo = length(X_0)
-    distribucion = Normal(media, desv_std)
-    fluctuaciones = rand(distribucion, largo)
-    X_0 + fluctuaciones
-end
-
+###----------------------------------- Cuadriculado y Periodicidad ---------------------------------------------###
 
 function teselador_mat(coordenadas::Vector{Int64}, divisiones::Int64, cajitas::Int64)
     #rc_entero = Int64(ceil(cajitas/divisiones))
@@ -81,12 +78,16 @@ function vecinos{T<:Int64}(zonas::Array{Vector{T},3}, i::T, j::T, k::T)
     vecindad
 end
 
+###----------------------------------- Fuerzas Lennard-Jones ---------------------------------------------###
 
+#Fuerza de Lennard-Jones
 function fuerza(r::Float64,  r_c::Float64)
     if r < 0.4 #Este número se encontró empíricamente
         return 48(0.4^(-13)-0.4^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
-    else
+    elseif r < r_c
         return 48(r^(-13)-r^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
+    else 
+        return 0
     end
 end
 
@@ -103,33 +104,38 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     z_j = coord_enteras[j]
 
     #Pasamos a flotantes para el cálculo de la distancia y la fuerza
-    x_ij = entero_a_flotante(x_j - x_i, lado_caja, cajitas)
-    y_ij = entero_a_flotante(y_j - y_i, lado_caja, cajitas)
-    z_ij = entero_a_flotante(z_j - z_i, lado_caja, cajitas)
+    x_ij = x_j - x_i
+    y_ij = y_j - y_i
+    z_ij = z_j - z_i
 
     #Hay que considerar que la distancia se ve afectada por las fronteras periódicas.
     #Esta solución sólo funciona si hay más que tres divisiones por lado.
-
+    
+    
     #El factor de 2 está bien porque estamos considerando cada coordenada por separado.
-    rad_max = 2radio_critico
+    rad_max = flotante_a_entero(2radio_critico, lado_caja, cajitas)
 
     #Si la distancia es negativa la periodicidad la vuelve positiva, y viceversa.
     if x_ij > rad_max
-        x_ij -= lado_caja
+        x_ij -= cajitas
     elseif x_ij < -rad_max
-        x_ij += lado_caja
+        x_ij += cajitas
     end
     if y_ij > rad_max
-        y_ij -= lado_caja
+        y_ij -= cajitas
     elseif y_ij < -rad_max
-        y_ij += lado_caja
+        y_ij += cajitas
     end
     if z_ij > rad_max
-        z_ij -= lado_caja
+        z_ij -= cajitas
     elseif z_ij < -rad_max
-        z_ij += lado_caja
+        z_ij += cajitas
     end
 
+    x_ij = entero_a_flotante(x_ij, lado_caja, cajitas)
+    y_ij = entero_a_flotante(y_ij, lado_caja, cajitas)
+    z_ij = entero_a_flotante(z_ij, lado_caja, cajitas)
+    
     r_ij = sqrt(x_ij^2 + y_ij^2 + z_ij^2)
 
     f_ij = fuerza(r_ij, radio_critico)
@@ -185,6 +191,7 @@ function vector_fuerzas{T<:Float64}(coord_enteras::Vector{Int64}, lado_caja::T,
     suma_fuerzas
 end
 
+###----------------------------------- Integradores y Pasos Temporales ---------------------------------------------###
 
 function paso_verlet{T<:Int64}(coord_previas::Vector{T}, coord_actuales::Vector{T},
                               lado_caja::Float64, cajitas::T, r_c::Float64, h::Float64)
@@ -192,7 +199,7 @@ function paso_verlet{T<:Int64}(coord_previas::Vector{T}, coord_actuales::Vector{
     coord_futuras = zeros(Int64, largo)
     fuerzas = vector_fuerzas(coord_actuales, lado_caja, cajitas ,r_c, h)
     for i in 1:largo
-        coord_futuras[i] = coord_previas[i] + 2*coord_actuales[i] - fuerzas[i]
+        coord_futuras[i] = -coord_previas[i] + 2*coord_actuales[i] + fuerzas[i]
         #Hay que revisar que no se salgan de la cajita, el rollo es periodico.
         if (coord_futuras[i] > cajitas) | (coord_futuras[i] < 1)
             coord_futuras[i] = mod1(coord_futuras[i],cajitas)
@@ -201,6 +208,12 @@ function paso_verlet{T<:Int64}(coord_previas::Vector{T}, coord_actuales::Vector{
     coord_futuras
 end
 
+function fluctuacion_gaussiana(X_0, media = 0.0, desv_std = 0.1)
+    largo = length(X_0)
+    distribucion = Normal(media, desv_std)
+    fluctuaciones = rand(distribucion, largo)
+    X_0 + fluctuaciones
+end
 
 function evolucion{T<:Int64}(X0::Vector{T}, X1::Vector{T},
                             pasos::T, lado_caja::Float64,
