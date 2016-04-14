@@ -1,6 +1,7 @@
 module LennardGas
 
-#using PyPlot, Colors, Distributions
+#using PyPlot, Colors,
+using  Distributions
 export flotante_a_entero, entero_a_flotante, 
        fluctuacion_gaussiana, vector_fuerzas, 
        paso_verlet, evolucion
@@ -103,33 +104,38 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     z_j = coord_enteras[j]
 
     #Pasamos a flotantes para el cálculo de la distancia y la fuerza
-    x_ij = entero_a_flotante(x_j - x_i, lado_caja, cajitas)
-    y_ij = entero_a_flotante(y_j - y_i, lado_caja, cajitas)
-    z_ij = entero_a_flotante(z_j - z_i, lado_caja, cajitas)
+    x_ij = x_j - x_i
+    y_ij = y_j - y_i
+    z_ij = z_j - z_i
 
     #Hay que considerar que la distancia se ve afectada por las fronteras periódicas.
     #Esta solución sólo funciona si hay más que tres divisiones por lado.
-
+    
+    
     #El factor de 2 está bien porque estamos considerando cada coordenada por separado.
-    rad_max = 2radio_critico
+    rad_max = flotante_a_entero(2radio_critico, lado_caja, cajitas)
 
     #Si la distancia es negativa la periodicidad la vuelve positiva, y viceversa.
     if x_ij > rad_max
-        x_ij -= lado_caja
+        x_ij -= cajitas
     elseif x_ij < -rad_max
-        x_ij += lado_caja
+        x_ij += cajitas
     end
     if y_ij > rad_max
-        y_ij -= lado_caja
+        y_ij -= cajitas
     elseif y_ij < -rad_max
-        y_ij += lado_caja
+        y_ij += cajitas
     end
     if z_ij > rad_max
-        z_ij -= lado_caja
+        z_ij -= cajitas
     elseif z_ij < -rad_max
-        z_ij += lado_caja
+        z_ij += cajitas
     end
 
+    x_ij = entero_a_flotante(x_ij, lado_caja, cajitas)
+    y_ij = entero_a_flotante(y_ij, lado_caja, cajitas)
+    z_ij = entero_a_flotante(z_ij, lado_caja, cajitas)
+    
     r_ij = sqrt(x_ij^2 + y_ij^2 + z_ij^2)
 
     f_ij = fuerza(r_ij, radio_critico)
@@ -193,7 +199,7 @@ function paso_verlet{T<:Int64}(coord_previas::Vector{T}, coord_actuales::Vector{
     coord_futuras = zeros(Int64, largo)
     fuerzas = vector_fuerzas(coord_actuales, lado_caja, cajitas ,r_c, h)
     for i in 1:largo
-        coord_futuras[i] = coord_previas[i] + 2*coord_actuales[i] - fuerzas[i]
+        coord_futuras[i] = -coord_previas[i] + 2*coord_actuales[i] + fuerzas[i]
         #Hay que revisar que no se salgan de la cajita, el rollo es periodico.
         if (coord_futuras[i] > cajitas) | (coord_futuras[i] < 1)
             coord_futuras[i] = mod1(coord_futuras[i],cajitas)
