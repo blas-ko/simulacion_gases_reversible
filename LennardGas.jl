@@ -2,9 +2,9 @@ module LennardGas
 
 #using PyPlot, Colors,
 using  Distributions
-export flotante_a_entero, entero_a_flotante, 
-       fluctuacion_gaussiana, vector_fuerzas, 
-       paso_verlet, evolucion
+export flotante_a_entero, entero_a_flotante,
+       fluctuacion_gaussiana, vector_fuerzas,
+       paso_verlet, evolucion, cubito
 
 ###----------------------------------- Dominio Int64<->Float64 ---------------------------------------------###
 
@@ -86,7 +86,7 @@ function fuerza(r::Float64,  r_c::Float64)
         return 48(0.4^(-13)-0.4^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
     elseif r < r_c
         return 48(r^(-13)-r^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
-    else 
+    else
         return 0
     end
 end
@@ -110,8 +110,8 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
 
     #Hay que considerar que la distancia se ve afectada por las fronteras periódicas.
     #Esta solución sólo funciona si hay más que tres divisiones por lado.
-    
-    
+
+
     #El factor de 2 está bien porque estamos considerando cada coordenada por separado.
     rad_max = flotante_a_entero(2radio_critico, lado_caja, cajitas)
 
@@ -135,7 +135,7 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     x_ij = entero_a_flotante(x_ij, lado_caja, cajitas)
     y_ij = entero_a_flotante(y_ij, lado_caja, cajitas)
     z_ij = entero_a_flotante(z_ij, lado_caja, cajitas)
-    
+
     r_ij = sqrt(x_ij^2 + y_ij^2 + z_ij^2)
 
     f_ij = fuerza(r_ij, radio_critico)
@@ -229,5 +229,25 @@ function evolucion{T<:Int64}(X0::Vector{T}, X1::Vector{T},
     registro
 end
 
+
+###---------------------------------- Configuraciones iniciales -------------------------------------------------###
+
+function cubito(raiz_cubica_particulas::Int64, centro::Vector{Float64}, lado::Float64)
+
+    mitad = lado/2
+    x_cen, y_cen, z_cen = centro
+
+    xs = linspace(x_cen - mitad, x_cen + mitad, raiz_cubica_particulas)
+    ys = linspace(y_cen - mitad, y_cen + mitad, raiz_cubica_particulas)
+    zs = linspace(z_cen - mitad, z_cen + mitad, raiz_cubica_particulas)
+
+    particulas = raiz_cubica_particulas ^ 3.0
+    res = Float64[]
+
+    for x in xs, y in ys, z in zs
+        push!(res, x, y ,z)
+    end
+    res
+end
 
 end
