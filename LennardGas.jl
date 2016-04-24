@@ -1,10 +1,12 @@
 module LennardGas
 
-#using PyPlot, Colors,
-using  Distributions
+using  Distributions, PyCall, PyPlot
+@pyimport matplotlib.animation as anim
+
 export flotante_a_entero, entero_a_flotante,
        fluctuacion_gaussiana, vector_fuerzas,
-       paso_verlet, evolucion, cubito
+       paso_verlet, evolucion, prueba_reversible,
+       cubito, organizador, fotograma, animador
 
 ###----------------------------------- Dominio Int64<->Float64 ---------------------------------------------###
 
@@ -208,7 +210,7 @@ function paso_verlet{T<:Int64}(coord_previas::Vector{T}, coord_actuales::Vector{
     coord_futuras
 end
 
-function fluctuacion_gaussiana(X_0, media = 0.0, desv_std = 0.1)
+function fluctuacion_gaussiana(X_0::Vector{Float64}, media = 0.0, desv_std = 0.1)
     largo = length(X_0)
     distribucion = Normal(media, desv_std)
     fluctuaciones = rand(distribucion, largo)
@@ -229,8 +231,27 @@ function evolucion{T<:Int64}(X0::Vector{T}, X1::Vector{T},
     registro
 end
 
+function prueba_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
+                                    pasos::T, L::Float64, cajitas::T,
+                                    r_c::Float64, h::Float64)
 
-###---------------------------------- Configuraciones iniciales -------------------------------------------------###
+    registro_ida = evolucion(X0, X1, pasos, L, cajitas, r_c, h)
+    X_ultima = collect(registro_ida[end,:])
+    X_penultima = collect(registro_ida[end-1,:])
+
+    registro_vuelta = evolucion(X_ultima, X_penultima, pasos, L, cajitas, r_c, h)
+    X_original = collect(registro_vuelta[end,:])
+
+    if X0 == X_original
+        println("El proceso fue reversible.")
+    else
+        println("El proceso no fue reversible.")
+    end
+    registro_ida, registro_vuelta
+end
+
+
+###------------------------------------- Configuraciones iniciales -------------------------------------------------###
 
 function cubito(raiz_cubica_particulas::Int64, centro::Vector{Float64}, lado::Float64)
 
@@ -250,4 +271,60 @@ function cubito(raiz_cubica_particulas::Int64, centro::Vector{Float64}, lado::Fl
     res
 end
 
+end
+
+###------------------------------------- Animaciones y Gráficos  ---------------------------------------------------###
+
+function organizador(registro::Matrix{Int64}, tiempo::Int64)
+
+    N = size(registro, 2)÷3 #Funciona si el número de entradas es múltiplo de 3
+    coord = registro[tiempo, :]
+    x = zeros(N)
+    y = zeros(N)
+    z = zeros(N)
+    for i in 1:N
+        x[i] = coord[3i-2]
+        y[i] = coord[3i-1]
+        z[i] = coord[3i]
+    end
+    x,y,z
+end
+
+function fotograma(registro::Matrix{Int64}, tiempo::Int64; cajitas::Int64 = 0)
+
+    if (tiempo < 0) | (tiempo > size(registro, 1))
+        return println("El tiempo solicitado no se encuentra disponible en el registro dado.")
+    end
+
+    x,y,z = organizador(registro, tiempo)
+    plot3D(x, y, z, "b.", markersize = 4.0)
+    #axis("off")
+
+    #Si se especifica cajitas se evita el "zoom" automático.
+    if cajitas != 0
+        xlim(1,cajitas)
+        ylim(1,cajitas)
+        zlim(1,cajitas)
+    end
+end
+
+function animador(registro::Matrix{Int64}, nombre::ASCIIString)
+
+    fig = figure()
+    rollo = []
+
+    paso_temp = size(registro, 1)
+    for t in 1:paso_temp
+        x,y,z = organizador(registro,t)
+        fg = plot3D(x, y, z, "b.", markersize = 4.0)
+        push!(rollo, collect(fg))
+    end
+
+    #axis("off")
+    xlim(1,cajitas)
+    ylim(1,cajitas)
+    zlim(1,cajitas)
+
+    ani = anim.ArtistAnimation(fig, rollo, interval = 100, blit = true, repeat = true, repeat_delay = 2000)
+    ani[:save](nombre*".mp4", extra_args=["-vcodec", "libx264", "-pix_fmt", "yuv420p"])
 end
