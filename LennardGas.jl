@@ -1,10 +1,12 @@
 module LennardGas
 
-#using PyPlot, Colors,
-using  Distributions
-export flotante_a_entero, entero_a_flotante, 
-       fluctuacion_gaussiana, vector_fuerzas, 
-       paso_verlet, evolucion
+using  Distributions, PyCall, PyPlot
+@pyimport matplotlib.animation as anim
+
+export flotante_a_entero, entero_a_flotante,
+       fluctuacion_gaussiana, vector_fuerzas,
+       paso_verlet, evolucion, prueba_reversible,
+       cubito, organizador, fotograma, animador
 
 ###----------------------------------- Dominio Int64<->Float64 ---------------------------------------------###
 
@@ -86,7 +88,7 @@ function fuerza(r::Float64,  r_c::Float64)
         return 48(0.4^(-13)-0.4^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
     elseif r < r_c
         return 48(r^(-13)-r^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
-    else 
+    else
         return 0
     end
 end
@@ -110,8 +112,8 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
 
     #Hay que considerar que la distancia se ve afectada por las fronteras periódicas.
     #Esta solución sólo funciona si hay más que tres divisiones por lado.
-    
-    
+
+
     #El factor de 2 está bien porque estamos considerando cada coordenada por separado.
     rad_max = flotante_a_entero(2radio_critico, lado_caja, cajitas)
 
@@ -135,7 +137,7 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     x_ij = entero_a_flotante(x_ij, lado_caja, cajitas)
     y_ij = entero_a_flotante(y_ij, lado_caja, cajitas)
     z_ij = entero_a_flotante(z_ij, lado_caja, cajitas)
-    
+
     r_ij = sqrt(x_ij^2 + y_ij^2 + z_ij^2)
 
     f_ij = fuerza(r_ij, radio_critico)
@@ -208,7 +210,7 @@ function paso_verlet{T<:Int64}(coord_previas::Vector{T}, coord_actuales::Vector{
     coord_futuras
 end
 
-function fluctuacion_gaussiana(X_0, media = 0.0, desv_std = 0.1)
+function fluctuacion_gaussiana(X_0::Vector{Float64}, media = 0.0, desv_std = 0.1)
     largo = length(X_0)
     distribucion = Normal(media, desv_std)
     fluctuaciones = rand(distribucion, largo)
@@ -229,5 +231,100 @@ function evolucion{T<:Int64}(X0::Vector{T}, X1::Vector{T},
     registro
 end
 
+function prueba_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
+                                    pasos::T, L::Float64, cajitas::T,
+                                    r_c::Float64, h::Float64)
 
+    registro_ida = evolucion(X0, X1, pasos, L, cajitas, r_c, h)
+    X_ultima = collect(registro_ida[end,:])
+    X_penultima = collect(registro_ida[end-1,:])
+
+    registro_vuelta = evolucion(X_ultima, X_penultima, pasos, L, cajitas, r_c, h)
+    X_original = collect(registro_vuelta[end,:])
+
+    if X0 == X_original
+        println("El proceso fue reversible.")
+    else
+        println("El proceso no fue reversible.")
+    end
+    registro_ida, registro_vuelta
+end
+
+
+###------------------------------------- Configuraciones iniciales -------------------------------------------------###
+
+function cubito(raiz_cubica_particulas::Int64, centro::Vector{Float64}, lado::Float64)
+
+    mitad = lado/2
+    x_cen, y_cen, z_cen = centro
+
+    xs = linspace(x_cen - mitad, x_cen + mitad, raiz_cubica_particulas)
+    ys = linspace(y_cen - mitad, y_cen + mitad, raiz_cubica_particulas)
+    zs = linspace(z_cen - mitad, z_cen + mitad, raiz_cubica_particulas)
+
+    particulas = raiz_cubica_particulas ^ 3.0
+    res = Float64[]
+
+    for x in xs, y in ys, z in zs
+        push!(res, x, y ,z)
+    end
+    res
+end
+
+end
+
+###------------------------------------- Animaciones y Gráficos  ---------------------------------------------------###
+
+function organizador(registro::Matrix{Int64}, tiempo::Int64)
+
+    N = size(registro, 2)÷3 #Funciona si el número de entradas es múltiplo de 3
+    coord = registro[tiempo, :]
+    x = zeros(N)
+    y = zeros(N)
+    z = zeros(N)
+    for i in 1:N
+        x[i] = coord[3i-2]
+        y[i] = coord[3i-1]
+        z[i] = coord[3i]
+    end
+    x,y,z
+end
+
+function fotograma(registro::Matrix{Int64}, tiempo::Int64; cajitas::Int64 = 0)
+
+    if (tiempo < 0) | (tiempo > size(registro, 1))
+        return println("El tiempo solicitado no se encuentra disponible en el registro dado.")
+    end
+
+    x,y,z = organizador(registro, tiempo)
+    plot3D(x, y, z, "b.", markersize = 4.0)
+    #axis("off")
+
+    #Si se especifica cajitas se evita el "zoom" automático.
+    if cajitas != 0
+        xlim(1,cajitas)
+        ylim(1,cajitas)
+        zlim(1,cajitas)
+    end
+end
+
+function animador(registro::Matrix{Int64}, nombre::ASCIIString)
+
+    fig = figure()
+    rollo = []
+
+    paso_temp = size(registro, 1)
+    for t in 1:paso_temp
+        x,y,z = organizador(registro,t)
+        fg = plot3D(x, y, z, "b.", markersize = 4.0)
+        push!(rollo, collect(fg))
+    end
+
+    #axis("off")
+    xlim(1,cajitas)
+    ylim(1,cajitas)
+    zlim(1,cajitas)
+
+    ani = anim.ArtistAnimation(fig, rollo, interval = 100, blit = true, repeat = true, repeat_delay = 2000)
+    ani[:save](nombre*".mp4", extra_args=["-vcodec", "libx264", "-pix_fmt", "yuv420p"])
 end
