@@ -1,15 +1,16 @@
-using PyPlot , Distributions
+length(ARGS) == 2 || error("Necesito 2 argumentos: particulas_por_lado_cubico::Int64   pasos_temporales::Int64")
 
 #ENV["MPLBACKEND"] = "module://gr.matplotlib.backend_gr"
 
+using PyPlot , Distributions
 push!(LOAD_PATH, pwd())
 using LennardGas
 
 #Parámetros
-r_c = 2.5
-L   = r_c * 100
-cajitas = 2^60
-h = 0.005
+@show r_c = 2.5
+@show L   = r_c * 100
+@show cajitas = 2^60
+@show h = 0.005
 
 function rollo_fotos{T<:Int64}(X0::Vector{T}, X1::Vector{T},
                                 pasos::T, lado_caja::Float64,
@@ -52,7 +53,7 @@ function rollo_fotos_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
     foto(X0, cajitas, 0, estilo, 1.0)
 
     for t in 1:4pasos
-        X2 = paso_verlet(X0, X1, lado_caja, cajitas, r_c, h)
+        @time X2 = paso_verlet(X0, X1, lado_caja, cajitas, r_c, h)
         if t<pasos
           foto(X1, cajitas, t, estilo, 0.01)
         elseif t<2pasos-2
@@ -72,9 +73,10 @@ function rollo_fotos_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
 
 end
 
-pasos = 50
+pasos = parse(Int64, ARGS[2])
+
 # Incrementando las partículas se nota que los "arboles" sí funcionan.
-raiz_cub_part = 10
+raiz_cub_part = parse(Int64, ARGS[1])
 @show particulas = raiz_cub_part^3
 
 #Condicion inicial (en Float64)
