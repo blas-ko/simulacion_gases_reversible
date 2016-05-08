@@ -15,7 +15,7 @@ using LennardGas
 @show cajitas = 2^60
 @show h = 0.005
 
-function creador_gifs{T<:Int64}(X0::Vector{T}, X1::Vector{T},
+function creador_gif{T<:Int64}(X0::Vector{T}, X1::Vector{T},
                                 pasos::T, lado_caja::Float64,
                                   cajitas::Int64, r_c::Float64, h::Float64)
 
@@ -28,7 +28,7 @@ function creador_gifs{T<:Int64}(X0::Vector{T}, X1::Vector{T},
           continue
 
         elseif t == 1
-          x,y,z = organizador(X0)
+          x,y,z = organizador(X1)
           scatter3d(x,y,z, marker = (:circle, :white), background_color = RGB(0.2,0.2,0.2),
           xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
           continue
@@ -42,6 +42,39 @@ function creador_gifs{T<:Int64}(X0::Vector{T}, X1::Vector{T},
         (X0, X1, X2) = (X1, X2, X0)
     end
 end
+
+function creador_gif_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
+                                pasos::T, lado_caja::Float64,
+                                  cajitas::Int64, r_c::Float64, h::Float64)
+
+    @gif for t in 0:3pasos
+
+      if t <= 3
+        x,y,z = organizador(X0)
+        scatter3d(x,y,z, marker = (:circle, :purple), background_color = RGB(0.2,0.2,0.2),
+        xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
+      else
+        X2 = paso_verlet(X0, X1, lado_caja, cajitas, r_c, h)
+
+        if t<pasos
+          x,y,z = organizador(X1)
+          scatter3d(x,y,z, marker = (:circle, :red), background_color = RGB(0.2,0.2,0.2),
+                    xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
+        else
+          x,y,z = organizador(X2)
+          scatter3d(x,y,z, marker = (:circle, :orange), background_color = RGB(0.2,0.2,0.2),
+                    xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
+        end
+
+        if t == pasos-1
+          (X0, X1, X2) = (X2, X1, X0)
+        else
+          (X0, X1, X2) = (X1, X2, X0)
+        end
+      end
+    end
+end
+
 
 pasos = parse(Int64, ARGS[2])
 
@@ -57,4 +90,5 @@ segundo = fluctuacion_gaussiana(inicial, 0.0, 1.0)
 X0 = flotante_a_entero(inicial, L, cajitas)
 X1 = flotante_a_entero(segundo, L, cajitas)
 
-@time creador_gifs(X0, X1, pasos, L, cajitas, r_c, h)
+#@time creador_gif(X0, X1, pasos, L, cajitas, r_c, h)
+@time creador_gif_reversible(X0, X1, pasos, L, cajitas, r_c, h)
