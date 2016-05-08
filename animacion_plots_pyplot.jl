@@ -49,20 +49,20 @@ function creador_gif_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
 
     @gif for t in 0:3pasos
 
-      if t <= 3
+      if t <= 2
         x,y,z = organizador(X0)
-        scatter3d(x,y,z, marker = (:circle, :purple), background_color = RGB(0.2,0.2,0.2),
-        xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
+        scatter3d(x,y,z, marker = (:circle, :red), markersize = 4.0, background_color = RGB(0.2,0.2,0.2),
+                  xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
       else
         X2 = paso_verlet(X0, X1, lado_caja, cajitas, r_c, h)
 
         if t<pasos
           x,y,z = organizador(X1)
-          scatter3d(x,y,z, marker = (:circle, :red), background_color = RGB(0.2,0.2,0.2),
+          scatter3d(x,y,z, marker = (:circle, :red), markersize = 4.0, background_color = RGB(0.2,0.2,0.2),
                     xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
         else
           x,y,z = organizador(X2)
-          scatter3d(x,y,z, marker = (:circle, :orange), background_color = RGB(0.2,0.2,0.2),
+          scatter3d(x,y,z, marker = (:circle, :orange), markersize = 4.0, background_color = RGB(0.2,0.2,0.2),
                     xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
         end
 
