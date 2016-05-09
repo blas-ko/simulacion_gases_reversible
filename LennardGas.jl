@@ -275,6 +275,20 @@ end
 
 ###------------------------------------- Animaciones y Gráficos  ---------------------------------------------------###
 
+function organizador(coord::Vector{Int64})
+
+    N = length(coord)÷3 #Funciona si el número de entradas es múltiplo de 3
+    x = zeros(N)
+    y = zeros(N)
+    z = zeros(N)
+    for i in 1:N
+        x[i] = coord[3i-2]
+        y[i] = coord[3i-1]
+        z[i] = coord[3i]
+    end
+    x,y,z
+end
+
 function organizador(registro::Matrix{Int64}, tiempo::Int64)
 
     N = size(registro, 2)÷3 #Funciona si el número de entradas es múltiplo de 3
