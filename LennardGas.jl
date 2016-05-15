@@ -210,7 +210,7 @@ function paso_verlet{T<:Int64}(coord_previas::Vector{T}, coord_actuales::Vector{
     coord_futuras
 end
 
-function fluctuacion_gaussiana(X_0::Vector{Float64}, media = 0.0, desv_std = 0.1)
+function fluctuacion_gaussiana{T<:Float64}(X_0::Vector{T}, media::T = 0.0, desv_std::T = 0.1)
     largo = length(X_0)
     distribucion = Normal(media, desv_std)
     fluctuaciones = rand(distribucion, largo)
