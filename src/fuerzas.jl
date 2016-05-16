@@ -1,9 +1,9 @@
 #Fuerza de Lennard-Jones
 function fuerza(r::Float64,  r_c::Float64)
     if r < 0.4 #Este número se encontró empíricamente
-        return 48(0.4^(-13)-0.4^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
+        return 48(0.4^(-13)-0.4^(-7) - ((r_c)^(-13) - r_c^(-7)/2))/0.4
     elseif r < r_c
-        return 48(r^(-13)-r^(-7) - ((r_c)^(-13) - r_c^(-7))/2)/r_c
+        return 48(r^(-13)-r^(-7) - ((r_c)^(-13) - r_c^(-7)/2))/r
     else
         return 0
     end
