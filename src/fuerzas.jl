@@ -96,14 +96,18 @@ function vector_fuerzas{T<:Float64}(coord_enteras::Vector{Int64}, lado_caja::T,
 
         #Aquí aseguramos que las fuerzas dentro de zona sólo se calculen una ocasión.
         #Si ambas partículas están dentro de zona hay que imponer i<j para lo anterior.
-        for i in zona, j in zona
-            if i<j  #Para no calcular dos veces la misma fuerza.
+        for i in zona
+
+            for j in zona
+                if i<j  #Para no calcular dos veces la misma fuerza.
+                    fuerzas!(suma_fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
+                end
+            end
+            
+            #Si en cambio una está en zona y la otra en vecinos i<j no es necesario.
+            for j in vecindario
                 fuerzas!(suma_fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
             end
-        end
-        #Si en cambio una está en zona y la otra en vecinos i<j no es necesario.
-        for i in zona, j in vecindario
-            fuerzas!(suma_fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
         end
     end
     suma_fuerzas
