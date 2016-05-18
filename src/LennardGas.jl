@@ -4,8 +4,8 @@ using  Distributions, PyCall, PyPlot
 @pyimport matplotlib.animation as anim
 
 export flotante_a_entero, entero_a_flotante,
-       cubito, fluctuacion_gaussiana, vector_fuerzas,
-       paso_verlet, evolucion, prueba_reversible,
+       cubito, fluctuacion_gaussiana, vector_fuerzas!,
+       paso_verlet!, evolucion, prueba_reversible,
        organizador, fotograma, animador
 
 include("entero_flotante.jl")

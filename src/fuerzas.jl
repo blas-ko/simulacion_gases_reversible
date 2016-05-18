@@ -9,7 +9,6 @@ function fuerza(r::Float64,  r_c::Float64)
     end
 end
 
-
 function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, j::T, cajitas::T,
                             lado_caja::Float64, radio_critico::Float64, h::Float64)
     #Primero operamos con enteros
@@ -28,7 +27,6 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
 
     #Hay que considerar que la distancia se ve afectada por las fronteras periódicas.
     #Esta solución sólo funciona si hay más que tres divisiones por lado.
-
 
     #El factor de 2 está bien porque estamos considerando cada coordenada por separado.
     rad_max = flotante_a_entero(2radio_critico, lado_caja, cajitas)
@@ -78,17 +76,18 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     fuerzas[j] -= fzh
 end
 
-
 # Suponemos que todas las masas son iguales
-function vector_fuerzas{T<:Float64}(coord_enteras::Vector{Int64}, lado_caja::T,
-                                    cajitas::Int64, radio_critico::T, h::T)
+function vector_fuerzas!{T<:Int64}(zonas::Array{Vector{T},3}, fuerzas::Vector{T}, coord_enteras::Vector{T},
+                                      largo_coord::T, lado_caja::Float64, cajitas::T, radio_critico::Float64,
+                                        rc_entero::T, divisiones::T, h::Float64)
     #Coordenadas es el arreglo con las posiciones X = (x1,y1,z1, x2,y2,z2, ...)
-    largo = length(coord_enteras)
-    suma_fuerzas = zeros(Int64, largo)
+    #fuerzas = zeros(Int64, largo)
+    #divisiones = Int64(cld(lado_caja, radio_critico))
+    #rc_entero = cld(cajitas, divisiones)
 
-    divisiones = Int64(cld(lado_caja, radio_critico))
+    for i in eachindex(fuerzas); fuerzas[i] = 0; end #Una nueva fuerza cada paso.
 
-    zonas = teselador_mat(coord_enteras, divisiones, cajitas)
+    teselador_mat!(zonas, coord_enteras, largo_coord, rc_entero)
 
     for m = 1:divisiones, n = 1:divisiones, l = 1:divisiones
         zona = zonas[m,n,l]
@@ -100,15 +99,14 @@ function vector_fuerzas{T<:Float64}(coord_enteras::Vector{Int64}, lado_caja::T,
 
             for j in zona
                 if i<j  #Para no calcular dos veces la misma fuerza.
-                    fuerzas!(suma_fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
+                    fuerzas!(fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
                 end
             end
-            
+
             #Si en cambio una está en zona y la otra en vecinos i<j no es necesario.
             for j in vecindario
-                fuerzas!(suma_fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
+                fuerzas!(fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
             end
         end
     end
-    suma_fuerzas
 end
