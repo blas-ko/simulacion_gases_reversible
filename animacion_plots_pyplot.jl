@@ -15,6 +15,7 @@ using LennardGas
 @show cajitas = 2^60
 @show h = 0.005
 
+#=
 function creador_gif{T<:Int64}(X0::Vector{T}, X1::Vector{T},
                                 pasos::T, lado_caja::Float64,
                                   cajitas::Int64, r_c::Float64, h::Float64)
@@ -41,11 +42,21 @@ function creador_gif{T<:Int64}(X0::Vector{T}, X1::Vector{T},
                   xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
         (X0, X1, X2) = (X1, X2, X0)
     end
-end
+end =#
 
 function creador_gif_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
                                 pasos::T, lado_caja::Float64,
                                   cajitas::Int64, r_c::Float64, h::Float64)
+    largo_coord = length(X0)
+    divisiones = Int64(cld(lado_caja, r_c)) #Cajas de ancho ~ radio_critico que habrá por lado.
+    rc_entero = cld(cajitas, divisiones) #El radio crítico en unidades de cajitas (2^60 enteros).
+
+    X2 = zeros(Int64, largo_coord)
+    fuerzas = zeros(Int64, largo_coord)
+
+    rango = 1:divisiones
+    zonas = Vector{Int64}[[] for i = rango, j = rango, k = rango] # Predefine la matriz "directorio".
+    vecindario = Int64[] # Predefine el arreglo con vecinos.
 
     @gif for t in 0:3pasos
 
@@ -54,7 +65,8 @@ function creador_gif_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
         scatter3d(x,y,z, marker = (:circle, :red), markersize = 4.0, background_color = RGB(0.2,0.2,0.2),
                   xlims = (1,cajitas), ylims = (1,cajitas), zlims = (1,cajitas) )
       else
-        X2 = paso_verlet(X0, X1, lado_caja, cajitas, r_c, h)
+        paso_verlet!(X2, X1, X0, zonas, vecindario, fuerzas,
+                      largo_coord, lado_caja, cajitas, r_c, rc_entero, divisiones, h)
 
         if t<pasos
           x,y,z = organizador(X1)
