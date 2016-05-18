@@ -89,9 +89,10 @@ function vector_fuerzas!{T<:Int64}(zonas::Array{Vector{T},3}, fuerzas::Vector{T}
 
     teselador_mat!(zonas, coord_enteras, largo_coord, rc_entero)
 
+    vecindario = Int64[]
     for m = 1:divisiones, n = 1:divisiones, l = 1:divisiones
         zona = zonas[m,n,l]
-        vecindario = vecinos(zonas,m,n,l)
+        vecinos!(vecindario, zonas, m, n, l)
 
         #Aquí aseguramos que las fuerzas dentro de zona sólo se calculen una ocasión.
         #Si ambas partículas están dentro de zona hay que imponer i<j para lo anterior.

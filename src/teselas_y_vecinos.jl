@@ -18,14 +18,14 @@ function teselador_mat!{T<:Int64}(zonas::Array{Vector{T},3}, coordenadas::Vector
     zonas
 end
 
-function vecinos{T<:Int64}(zonas::Array{Vector{T},3}, i::T, j::T, k::T)
+function vecinos!{T<:Int64}(vecindad::Vector{T}, zonas::Array{Vector{T},3}, i::T, j::T, k::T)
     imax, jmax, kmax = size(zonas)
     i_plus = mod1(i+1, imax)
     j_plus = mod1(j+1, jmax)
     k_plus = mod1(k+1, kmax)
 
-    #vecindad = zonas[i,j,k]  #Incluyendo la zona inicial.
-    vecindad = Int64[]  #Incluyendo sólo a los vecinos de la zona inicial.
+    resize!(vecindad, 0)
+    #vecindad = Int64[]  #Incluyendo sólo a los vecinos de la zona inicial.
 
     append!(vecindad, zonas[i_plus, j, k])
     append!(vecindad, zonas[i, j_plus, k])
