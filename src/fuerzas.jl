@@ -78,8 +78,8 @@ end
 
 # Suponemos que todas las masas son iguales
 function vector_fuerzas!{T<:Int64}(zonas::Array{Vector{T},3}, fuerzas::Vector{T}, coord_enteras::Vector{T},
-                                      largo_coord::T, lado_caja::Float64, cajitas::T, radio_critico::Float64,
-                                        rc_entero::T, divisiones::T, h::Float64)
+                                      vecindario::Vector{T}, largo_coord::T, lado_caja::Float64, cajitas::T,
+                                          radio_critico::Float64, rc_entero::T, divisiones::T, h::Float64)
     #Coordenadas es el arreglo con las posiciones X = (x1,y1,z1, x2,y2,z2, ...)
     #fuerzas = zeros(Int64, largo)
     #divisiones = Int64(cld(lado_caja, radio_critico))
@@ -91,7 +91,7 @@ function vector_fuerzas!{T<:Int64}(zonas::Array{Vector{T},3}, fuerzas::Vector{T}
 
     for m = 1:divisiones, n = 1:divisiones, l = 1:divisiones
         zona = zonas[m,n,l]
-        vecindario = vecinos(zonas,m,n,l)
+        vecinos!(vecindario, zonas, m, n, l)
 
         #Aquí aseguramos que las fuerzas dentro de zona sólo se calculen una ocasión.
         #Si ambas partículas están dentro de zona hay que imponer i<j para lo anterior.
