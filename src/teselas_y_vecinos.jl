@@ -1,12 +1,7 @@
 function teselador_mat!{T<:Int64}(zonas::Array{Vector{T},3}, coordenadas::Vector{T},
                                     largo_coord::T, rc_entero::T)
-    #rc_entero = Int64(ceil(cajitas/divisiones))
-    #rc_entero = cld(cajitas, divisiones)  #El radio crítico en unidades de cajitas (2^60 enteros)
-    #rango = 1:divisiones
-    #largo = length(coordenadas)
-
     for k in eachindex(zonas)
-        resize!(zonas[k], 0)
+        resize!(zonas[k], 0) # Esto es casi equivalente a: zonas[k] = Int64[]
     end
 
     for i in 3:3:largo_coord
@@ -24,8 +19,7 @@ function vecinos!{T<:Int64}(vecindad::Vector{T}, zonas::Array{Vector{T},3}, i::T
     j_plus = mod1(j+1, jmax)
     k_plus = mod1(k+1, kmax)
 
-    resize!(vecindad, 0)
-    #vecindad = Int64[]  #Incluyendo sólo a los vecinos de la zona inicial.
+    resize!(vecindad, 0) # Esto es casi equivalente a: vecindad = Int64[]
 
     append!(vecindad, zonas[i_plus, j, k])
     append!(vecindad, zonas[i, j_plus, k])

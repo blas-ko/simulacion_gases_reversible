@@ -80,18 +80,15 @@ end
 function vector_fuerzas!{T<:Int64}(zonas::Array{Vector{T},3}, fuerzas::Vector{T}, coord_enteras::Vector{T},
                                       vecindario::Vector{T}, largo_coord::T, lado_caja::Float64, cajitas::T,
                                           radio_critico::Float64, rc_entero::T, divisiones::T, h::Float64)
-    #Coordenadas es el arreglo con las posiciones X = (x1,y1,z1, x2,y2,z2, ...)
-    #fuerzas = zeros(Int64, largo)
-    #divisiones = Int64(cld(lado_caja, radio_critico))
-    #rc_entero = cld(cajitas, divisiones)
+    #Coordenadas (coord_enteras) es el arreglo con las posiciones X = (x1,y1,z1, x2,y2,z2, ...)
 
-    for i in eachindex(fuerzas); fuerzas[i] = 0; end #Una nueva fuerza cada paso.
+    for i in eachindex(fuerzas); fuerzas[i] = 0; end #Un nuevo vector de fuerzas en cada paso temporal.
 
-    teselador_mat!(zonas, coord_enteras, largo_coord, rc_entero)
+    teselador_mat!(zonas, coord_enteras, largo_coord, rc_entero) #Actualiza la matriz de zonas.
 
     for m = 1:divisiones, n = 1:divisiones, l = 1:divisiones
         zona = zonas[m,n,l]
-        vecinos!(vecindario, zonas, m, n, l)
+        vecinos!(vecindario, zonas, m, n, l) # Actualiza el arreglo que contiene los vecinos.
 
         #Aquí aseguramos que las fuerzas dentro de zona sólo se calculen una ocasión.
         #Si ambas partículas están dentro de zona hay que imponer i<j para lo anterior.
@@ -103,7 +100,7 @@ function vector_fuerzas!{T<:Int64}(zonas::Array{Vector{T},3}, fuerzas::Vector{T}
                 end
             end
 
-            #Si en cambio una está en zona y la otra en vecinos i<j no es necesario.
+            #Si en cambio una partícula está en zona y la otra en vecinos, i<j no es necesario.
             for j in vecindario
                 fuerzas!(fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
             end

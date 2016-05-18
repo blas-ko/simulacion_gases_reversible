@@ -3,11 +3,12 @@ function paso_verlet!{T<:Int64}(coord_futuras::Vector{T}, coord_actuales::Vector
                                     lado_caja::Float64, cajitas::T, radio_critico::Float64,
                                       rc_entero::T, divisiones::T, paso_temporal::Float64)
 
+    #Modifica: zonas, fuerzas y vecindario.
     vector_fuerzas!(zonas, fuerzas, coord_actuales, vecindario, largo_coord, lado_caja, cajitas,
                       radio_critico, rc_entero, divisiones, paso_temporal)
     for i in 1:largo_coord
         coord_futuras[i] = -coord_previas[i] + 2*coord_actuales[i] + fuerzas[i]
-        #hay que revisar que no se salgan de la cajita, el rollo es periodico.
+        #Imponer periodicidad si algo salió de la caja mayor.
         if (coord_futuras[i] > cajitas) || (coord_futuras[i] < 1)
             coord_futuras[i] = mod1(coord_futuras[i], cajitas)
         end
@@ -18,24 +19,25 @@ end
 function evolucion{T<:Int64}(X0::Vector{T}, X1::Vector{T}, pasos::T, lado_caja::Float64,
                                 cajitas::T, radio_critico::Float64, paso_temporal::Float64)
     largo_coord = length(X0)
-    divisiones = Int64(cld(lado_caja, radio_critico))
-    rc_entero = cld(cajitas, divisiones)
+    divisiones = Int64(cld(lado_caja, radio_critico)) #Cajas de ancho ~ radio_critico que habrá por lado.
+    rc_entero = cld(cajitas, divisiones) #El radio crítico en unidades de cajitas (2^60 enteros).
 
     registro = Matrix{Int64}(pasos+2, largo_coord)
     registro[1,:] = X0
     registro[2,:] = X1
 
-    X2 = zeros(Int64, largo_coord)
+    coord_futuras = zeros(Int64, largo_coord)
     fuerzas = zeros(Int64, largo_coord)
 
     rango = 1:divisiones
-    zonas = Vector{Int64}[[] for i = rango, j = rango, k = rango]
-    vecindario = Int64[]
+    zonas = Vector{Int64}[[] for i = rango, j = rango, k = rango] # Predefine la matriz "directorio".
+    vecindario = Int64[] # Predefine el arreglo con vecinos.
 
     for t in 3:pasos+2
-        paso_verlet!(X2, collect(registro[t-1,:]), collect(registro[t-2,:]), zonas, vecindario, fuerzas,
+        # Modifica: el arreglo de coord_futuras, zonas, vecindario y fuerzas.
+        paso_verlet!(coord_futuras, collect(registro[t-1,:]), collect(registro[t-2,:]), zonas, vecindario, fuerzas,
                       largo_coord, lado_caja, cajitas, radio_critico, rc_entero, divisiones, paso_temporal)
-        registro[t,:] = X2
+        registro[t,:] = coord_futuras
     end
     registro
 end
