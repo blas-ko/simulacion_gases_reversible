@@ -1,9 +1,9 @@
 function paso_verlet!{T<:Int64}(coord_futuras::Vector{T}, coord_actuales::Vector{T}, coord_previas::Vector{T},
-                                  zonas::Array{Vector{T},3}, fuerzas::Vector{T}, largo_coord::T,
+                                  zonas::Array{Vector{T},3}, vecindario::Vector{T}, fuerzas::Vector{T}, largo_coord::T,
                                     lado_caja::Float64, cajitas::T, radio_critico::Float64,
                                       rc_entero::T, divisiones::T, paso_temporal::Float64)
 
-    vector_fuerzas!(zonas, fuerzas, coord_actuales, largo_coord, lado_caja, cajitas,
+    vector_fuerzas!(zonas, fuerzas, coord_actuales, vecindario, largo_coord, lado_caja, cajitas,
                       radio_critico, rc_entero, divisiones, paso_temporal)
     for i in 1:largo_coord
         coord_futuras[i] = -coord_previas[i] + 2*coord_actuales[i] + fuerzas[i]
@@ -30,9 +30,10 @@ function evolucion{T<:Int64}(X0::Vector{T}, X1::Vector{T}, pasos::T, lado_caja::
 
     rango = 1:divisiones
     zonas = Vector{Int64}[[] for i = rango, j = rango, k = rango]
+    vecindario = Int64[]
 
     for t in 3:pasos+2
-        paso_verlet!(X2, collect(registro[t-1,:]), collect(registro[t-2,:]), zonas, fuerzas,
+        paso_verlet!(X2, collect(registro[t-1,:]), collect(registro[t-2,:]), zonas, vecindario, fuerzas,
                       largo_coord, lado_caja, cajitas, radio_critico, rc_entero, divisiones, paso_temporal)
         registro[t,:] = X2
     end
