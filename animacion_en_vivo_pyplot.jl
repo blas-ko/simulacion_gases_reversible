@@ -47,13 +47,27 @@ end
 function rollo_fotos_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
                                             pasos::T, lado_caja::Float64,
                                               cajitas::Int64, r_c::Float64, h::Float64)
+
+    largo_coord = length(X0)
+    divisiones = Int64(cld(lado_caja, r_c)) #Cajas de ancho ~ radio_critico que habrá por lado.
+    rc_entero = cld(cajitas, divisiones) #El radio crítico en unidades de cajitas (2^60 enteros).
+
+    X2 = zeros(Int64, largo_coord)
+    fuerzas = zeros(Int64, largo_coord)
+
+    rango = 1:divisiones
+    zonas = Vector{Int64}[[] for i = rango, j = rango, k = rango] # Predefine la matriz "directorio".
+    vecindario = Int64[] # Predefine el arreglo con vecinos.
+
     estilo = "go"
     PyPlot.ion() #Modo interactivo
 
     foto(X0, cajitas, 0, estilo, 1.0)
 
     for t in 1:4pasos
-        @time X2 = paso_verlet(X0, X1, lado_caja, cajitas, r_c, h)
+        #@time X2 = paso_verlet(X0, X1, lado_caja, cajitas, r_c, h)
+        @time paso_verlet!(X2, X1, X0, zonas, vecindario, fuerzas,
+                      largo_coord, lado_caja, cajitas, r_c, rc_entero, divisiones, h)
         if t<pasos
           foto(X1, cajitas, t, estilo, 0.01)
         elseif t<2pasos-2
