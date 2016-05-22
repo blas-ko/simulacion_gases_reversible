@@ -3,7 +3,7 @@ length(ARGS) == 2 || error("Necesito 2 argumentos: particulas_por_lado_cubico::I
 #ENV["MPLBACKEND"] = "module://gr.matplotlib.backend_gr"
 
 using PyPlot , Distributions
-push!(LOAD_PATH, pwd())
+push!(LOAD_PATH, pwd()*"/src")
 using LennardGas
 
 #Parámetros

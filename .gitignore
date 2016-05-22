@@ -2,3 +2,7 @@
 # Puntos de control de los notebooks de Jupyter #
 
 .ipynb_checkpoints/
+
+# Animaciones pesadas en formato GIF #
+
+*.gif
