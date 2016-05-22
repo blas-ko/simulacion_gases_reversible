@@ -5,7 +5,7 @@ using  Distributions, PyCall, PyPlot
 
 export flotante_a_entero, entero_a_flotante,
        cubito, fluctuacion_gaussiana, vector_fuerzas!,
-       paso_verlet!, evolucion, prueba_reversible,
+       paso_verlet!, evolucion, evolucion_reversible, prueba_reversible,
        organizador, fotograma, animador
 
 include("entero_flotante.jl")
