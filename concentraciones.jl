@@ -1,5 +1,5 @@
-if length(ARGS) !== 3
-  error("Necesito 3 argumentos: particulas_por_lado_cubico::Int64   pasos_temporales::Int64  exp_error::Int64")
+if length(ARGS) !== 5
+  error("Necesito 5 argumentos: particulas_por_lado_cubico::Int64   pasos_temporales::Int64  exponente_error_inicial::Int64  saltos_exponente::Int64  exponente_error_final::Int64")
 end
 
 using PyPlot
@@ -82,7 +82,8 @@ function comparador(raiz_cub_part::Int64, pasos::Int64, exp_error::Int64; eje::A
 
    tiempo = 1:size(primeros,1)
 
-   f , axarr = subplots(2, sharex=true)
+   # f , axarr = subplots(2, sharex=true)
+
    axarr[1][:plot](tiempo, primeros[:,1])
    axarr[1][:plot](tiempo, ultimos[:,1])
    axarr[1][:set_title]("Concentración lado izquierdo")
@@ -91,11 +92,17 @@ function comparador(raiz_cub_part::Int64, pasos::Int64, exp_error::Int64; eje::A
    axarr[2][:plot](tiempo, ultimos[:,2])
    axarr[2][:set_title]("Concentración lado derecho")
 
-   #=
-   plot(eje, primeros[:,1])
-   plot(eje, ultimos[:,1])
-   =#
-   show()
+   # show()
 end
 
-comparador(parse(Int64, ARGS[1]), parse(Int64, ARGS[2]), parse(Int64, ARGS[3]))
+raiz_cub_part = parse(Int64, ARGS[1])
+pasos = parse(Int64, ARGS[2])
+rango = parse(Int64, ARGS[3]):parse(Int64, ARGS[4]):parse(Int64, ARGS[5])
+
+f , axarr = subplots(2, sharex = true)
+for exp in rango
+    comparador(raiz_cub_part, pasos, exp)
+end
+show()
+
+# julia concentraciones.jl 10 500 0 3 12
