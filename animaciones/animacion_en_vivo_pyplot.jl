@@ -3,7 +3,7 @@ length(ARGS) == 2 || error("Necesito 2 argumentos: particulas_por_lado_cubico::I
 #ENV["MPLBACKEND"] = "module://gr.matplotlib.backend_gr"
 
 using PyPlot , Distributions
-push!(LOAD_PATH, pwd()*"/src")
+push!(LOAD_PATH, dirname(pwd())*"/src")
 using LennardGas
 
 function rollo_fotos{T<:Int64}(X0::Vector{T}, X1::Vector{T},

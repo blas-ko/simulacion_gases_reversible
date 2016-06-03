@@ -6,7 +6,7 @@ using Plots, Distributions
 
 pyplot(reuse = true)
 
-push!(LOAD_PATH, pwd()*"/src")
+push!(LOAD_PATH, dirname(pwd())*"/src")
 using LennardGas
 
 #Parámetros
