@@ -94,6 +94,8 @@ raiz_cub_part = parse(Int64, ARGS[1])
 pasos = parse(Int64, ARGS[2])
 rango = parse(Int64, ARGS[3]):parse(Int64, ARGS[4]):parse(Int64, ARGS[5])
 
+part = raiz_cub_part^3
+
 f , axarr = subplots(2, sharex = true)
 for exp in rango
     comparador(raiz_cub_part, pasos, exp)
@@ -104,10 +106,11 @@ axarr[2][:axvline](pasos+2.5, linestyle = "dashdot", color = "black")
 axarr[1][:axvline](2pasos+4, linestyle = "dotted", color = "black")
 axarr[2][:axvline](2pasos+4, linestyle = "dotted", color = "black")
 
-axarr[1][:legend](loc = "center left", bbox_to_anchor=(0, 0.5), title = "Errores", fontsize = 9)
-axarr[2][:legend](loc = "center left", bbox_to_anchor=(0, 0.5), title = "Errores", fontsize = 9)
+axarr[1][:legend](loc = "center left", bbox_to_anchor=(1, 0.5), title = "Errores", fontsize = 9)
+axarr[2][:legend](loc = "center left", bbox_to_anchor=(1, 0.5), title = "Errores", fontsize = 9)
 
 axarr[1][:set_title]("Concentración lado izquierdo")
 axarr[2][:set_title]("Concentración lado derecho")
 
+savefig("concen_p_$part\_t_$pasos.pdf",  bbox_inches = "tight")
 show()
