@@ -70,6 +70,8 @@ function evolucion_casi_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
     X_penultima = collect(registro_ida[end-1,:])
 
     X_ultima[1] += 10^exp_error
+    X_ultima[2] += 10^exp_error
+    X_ultima[3] += 10^exp_error
 
     registro_vuelta = evolucion(X_ultima, X_penultima, 2pasos+2, lado_caja, cajitas, radio_critico, paso_temporal)
     X_original = collect(registro_vuelta[pasos+2,:])
