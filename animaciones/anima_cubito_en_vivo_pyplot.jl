@@ -3,26 +3,8 @@ length(ARGS) == 2 || error("Necesito 2 argumentos: particulas_por_lado_cubico::I
 #ENV["MPLBACKEND"] = "module://gr.matplotlib.backend_gr"
 
 using PyPlot , Distributions
-push!(LOAD_PATH, pwd()*"/src")
+push!(LOAD_PATH, "../src")
 using LennardGas
-
-function rollo_fotos{T<:Int64}(X0::Vector{T}, X1::Vector{T},
-                                pasos::T, lado_caja::Float64,
-                                  cajitas::Int64, r_c::Float64, h::Float64)
-    for t in 1:pasos
-        cla()
-        X2 = paso_verlet(X0,X1, lado_caja, cajitas, r_c, h)
-        x,y,z = organizador(X2)
-        lin, = plot3D(x, y, z, "bo", markersize = 4.0)
-        xlim(1,cajitas)
-        ylim(1,cajitas)
-        zlim(1,cajitas)
-        #display(gcf())
-        draw()
-        pause(0.001)
-        (X0, X1, X2) = (X1, X2, X0)
-    end
-end
 
 function foto{T<:Int64}(X::Vector{T}, cajitas::T, tiempo::T,
                         estilo:: ASCIIString, pausa::Float64)
@@ -102,7 +84,6 @@ function proyector(raiz_cub_part::Int64, pasos::Int64)
   X0 = flotante_a_entero(inicial, L, cajitas)
   X1 = flotante_a_entero(segundo, L, cajitas)
 
-  #@time pelicula = rollo_fotos(X0, X1, pasos, L, cajitas, r_c, h)
   @time pelicula = rollo_fotos_reversible(X0, X1, pasos, L, cajitas, r_c, h)
 end
 
