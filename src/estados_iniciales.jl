@@ -51,9 +51,13 @@ function cubito(raiz_cubica_particulas::Int64, centro::Vector{Float64}, lado::Fl
     coordenadas
 end
 
-function fluctuacion_gaussiana{T<:Float64}(X_0::Vector{T}, media::T = 0.0, desv_std::T = 0.1)
+function fluctuacion_gaussiana{T<:Float64}(X_0::Vector{T}, lado_caja::T ,media::T = 0.0, desv_std::T = 0.1)
     largo = length(X_0)
+    X_1 = zeros(largo)
     distribucion = Normal(media, desv_std)
     fluctuaciones = rand(distribucion, largo)
-    X_0 + fluctuaciones
+    for i in 1:largo
+        X_1[i] = mod1(X_0[i] + fluctuaciones[i], lado_caja)
+    end
+    return X_1 #X_0 + fluctuaciones
 end

@@ -87,7 +87,7 @@ function proyector(raiz_cub_part::Int64, pasos::Int64)
 
   #Condicion inicial (en Float64)
   inicial = bifase(raiz_cub_part, L, eje_division = "x")
-  segundo = fluctuacion_gaussiana(inicial, 0.0, 1.0)
+  segundo = fluctuacion_gaussiana(inicial, L, 0.0, 1.0)
 
   #Condición inicial (en Int64)
   X0 = flotante_a_entero(inicial, L, cajitas)
