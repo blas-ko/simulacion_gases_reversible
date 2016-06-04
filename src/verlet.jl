@@ -62,8 +62,8 @@ function evolucion_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
 end
 
 function evolucion_casi_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
-                                          pasos::T, lado_caja::Float64, cajitas::T,
-                                            radio_critico::Float64, paso_temporal::Float64, exp_error::T)
+                                              pasos::T, lado_caja::Float64, cajitas::T,
+                                                radio_critico::Float64, paso_temporal::Float64, exp_error::T)
 
     registro_ida = evolucion(X0, X1, pasos, lado_caja, cajitas, radio_critico, paso_temporal)
     X_ultima = collect(registro_ida[end,:])
@@ -71,8 +71,8 @@ function evolucion_casi_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
 
     X_ultima[1] += 10^exp_error
 
-    registro_vuelta = evolucion(X_ultima, X_penultima, pasos, lado_caja, cajitas, radio_critico, paso_temporal)
-    X_original = collect(registro_vuelta[end,:])
+    registro_vuelta = evolucion(X_ultima, X_penultima, 2pasos+2, lado_caja, cajitas, radio_critico, paso_temporal)
+    X_original = collect(registro_vuelta[pasos+2,:])
 
     if X0 == X_original
         println("El proceso fue reversible.")

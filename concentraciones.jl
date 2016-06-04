@@ -13,10 +13,7 @@ function registradora(raiz_cub_part::Int64, pasos::Int64, exp_error::Int64, eje:
   @show cajitas = 2^60
   @show h = 0.005
 
-  #pasos = parse(Int64, ARGS[2])
-
   # Incrementando las partículas se nota que los "arboles" sí funcionan.
-  #raiz_cub_part = parse(Int64, ARGS[1])
   @show particulas = raiz_cub_part^3
 
   #Condicion inicial (en Float64)
@@ -84,13 +81,11 @@ function comparador(raiz_cub_part::Int64, pasos::Int64, exp_error::Int64; eje::A
 
    # f , axarr = subplots(2, sharex=true)
 
-   axarr[1][:plot](tiempo, primeros[:,1])
+   axarr[1][:plot](tiempo, primeros[:,1], label = "10^$exp_error")
    axarr[1][:plot](tiempo, ultimos[:,1])
-   axarr[1][:set_title]("Concentración lado izquierdo")
 
-   axarr[2][:plot](tiempo, primeros[:,2])
+   axarr[2][:plot](tiempo, primeros[:,2], label= "10^$exp_error")
    axarr[2][:plot](tiempo, ultimos[:,2])
-   axarr[2][:set_title]("Concentración lado derecho")
 
    # show()
 end
@@ -103,6 +98,16 @@ f , axarr = subplots(2, sharex = true)
 for exp in rango
     comparador(raiz_cub_part, pasos, exp)
 end
-show()
+axarr[1][:axvline](pasos+2.5, linestyle = "dashdot", color = "black")
+axarr[2][:axvline](pasos+2.5, linestyle = "dashdot", color = "black")
 
-# julia concentraciones.jl 10 500 0 3 12
+axarr[1][:axvline](2pasos+4, linestyle = "dotted", color = "black")
+axarr[2][:axvline](2pasos+4, linestyle = "dotted", color = "black")
+
+axarr[1][:legend](loc = "center left", bbox_to_anchor=(0, 0.5), title = "Errores", fontsize = 9)
+axarr[2][:legend](loc = "center left", bbox_to_anchor=(0, 0.5), title = "Errores", fontsize = 9)
+
+axarr[1][:set_title]("Concentración lado izquierdo")
+axarr[2][:set_title]("Concentración lado derecho")
+
+show()
