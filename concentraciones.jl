@@ -80,11 +80,12 @@ function comparador(raiz_cub_part::Int64, pasos::Int64, exp_error::Int64; eje::A
    tiempo = 1:size(primeros,1)
 
    # f , axarr = subplots(2, sharex=true)
+   exp_error == -1 ? etiqueta = "Nulo" : etiqueta = "10^$exp_error"
 
-   axarr[1][:plot](tiempo, primeros[:,1], label = "10^$exp_error")
+   axarr[1][:plot](tiempo, primeros[:,1], label = etiqueta)
    axarr[1][:plot](tiempo, ultimos[:,1])
 
-   axarr[2][:plot](tiempo, primeros[:,2], label= "10^$exp_error")
+   axarr[2][:plot](tiempo, primeros[:,2], label = etiqueta)
    axarr[2][:plot](tiempo, ultimos[:,2])
 
    # show()
