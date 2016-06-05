@@ -54,7 +54,6 @@ function casi_reversible{T<:Int64}(X0::Vector{T}, X1::Vector{T},
     end
 
     sondeo!(reg_primeros, reg_ultimos, X0, largo_coord, cajitas, 1, i)
-    #sondeo!(reg_primeros, reg_ultimos, X1, largo_coord, cajitas, 2, i)
 
     for t in 1:3pasos
         paso_verlet!(X2, X1, X0, zonas, vecindario, fuerzas,
@@ -117,7 +116,7 @@ end
 
   f , axarr = subplots(2, sharex = true)
 
-  for exp in rango_exp_errores
+  @time for exp in rango_exp_errores
       #Condición inicial (en Int64)
       X0 = flotante_a_entero(inicial, L, cajitas)
       X1 = flotante_a_entero(segundo, L, cajitas)
