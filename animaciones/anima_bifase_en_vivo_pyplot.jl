@@ -75,7 +75,7 @@ end
 function proyector(raiz_cub_part::Int64, pasos::Int64)
   #Parámetros
   @show r_c = 2.5
-  @show L   = r_c * 100
+  @show L   = r_c * 25
   @show cajitas = 2^60
   @show h = 0.005
 

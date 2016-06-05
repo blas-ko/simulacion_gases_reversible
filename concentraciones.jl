@@ -103,7 +103,7 @@ end
 
   #Parámetros
   @show r_c = 2.5
-  @show L   = r_c * 100
+  @show L   = r_c * 10
   @show cajitas = 2^60
   @show h = 0.005
 
