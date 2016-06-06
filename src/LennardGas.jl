@@ -8,6 +8,7 @@ export flotante_a_entero, entero_a_flotante,
        vector_fuerzas!, paso_verlet!,
        evolucion, evolucion_reversible, prueba_reversible,
        evolucion_casi_reversible,
+       evolucion_clasica,
        organizador, fotograma, animador
 
 include("entero_flotante.jl")
@@ -15,6 +16,8 @@ include("estados_iniciales.jl")
 include("fuerzas.jl")
 include("teselas_y_vecinos.jl")
 include("verlet.jl")
+
+include("clasico.jl")
 
 include( "graficos.jl") #Quizá no se requiera importar estas funciones aquí.
 

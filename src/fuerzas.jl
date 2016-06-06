@@ -29,7 +29,8 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     #Esta solución sólo funciona si hay más que tres divisiones por lado.
 
     #El factor de 2 está bien porque estamos considerando cada coordenada por separado.
-    rad_max = flotante_a_entero(2radio_critico, lado_caja, cajitas)
+    #rad_max = flotante_a_entero(2 * radio_critico, lado_caja, cajitas)
+    rad_max = cajitas÷2
 
     #Si la distancia es negativa la periodicidad la vuelve positiva, y viceversa.
     if x_ij > rad_max
