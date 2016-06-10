@@ -20,7 +20,6 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     y_j = coord_enteras[j-1]
     z_j = coord_enteras[j]
 
-    #Pasamos a flotantes para el cálculo de la distancia y la fuerza
     x_ij = x_j - x_i
     y_ij = y_j - y_i
     z_ij = z_j - z_i
@@ -49,17 +48,18 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
         z_ij += cajitas
     end
 
-    x_ij = entero_a_flotante(x_ij, lado_caja, cajitas)
-    y_ij = entero_a_flotante(y_ij, lado_caja, cajitas)
-    z_ij = entero_a_flotante(z_ij, lado_caja, cajitas)
+    #Pasamos a flotantes para el cálculo de la distancia y la fuerza
+    x_ij_float = entero_a_flotante(x_ij, lado_caja, cajitas)
+    y_ij_float = entero_a_flotante(y_ij, lado_caja, cajitas)
+    z_ij_float = entero_a_flotante(z_ij, lado_caja, cajitas)
 
-    r_ij = sqrt(x_ij^2 + y_ij^2 + z_ij^2)
+    r_ij = sqrt(x_ij_float^2 + y_ij_float^2 + z_ij_float^2)
 
     f_ij = fuerza(r_ij, radio_critico)
 
-    fx = f_ij * x_ij
-    fy = f_ij * y_ij
-    fz = f_ij * z_ij
+    fx = f_ij * x_ij_float
+    fy = f_ij * y_ij_float
+    fz = f_ij * z_ij_float
 
     h2 = h^2
 
