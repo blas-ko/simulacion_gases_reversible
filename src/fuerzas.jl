@@ -9,7 +9,6 @@ function fuerza(r::Float64,  r_c::Float64)
     end
 end
 
-
 function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, j::T, cajitas::T,
                             lado_caja::Float64, radio_critico::Float64, h::Float64)
     #Primero operamos con enteros
@@ -21,7 +20,6 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     y_j = coord_enteras[j-1]
     z_j = coord_enteras[j]
 
-    #Pasamos a flotantes para el cálculo de la distancia y la fuerza
     x_ij = x_j - x_i
     y_ij = y_j - y_i
     z_ij = z_j - z_i
@@ -29,9 +27,9 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     #Hay que considerar que la distancia se ve afectada por las fronteras periódicas.
     #Esta solución sólo funciona si hay más que tres divisiones por lado.
 
-
     #El factor de 2 está bien porque estamos considerando cada coordenada por separado.
-    rad_max = flotante_a_entero(2radio_critico, lado_caja, cajitas)
+    #rad_max = flotante_a_entero(2 * radio_critico, lado_caja, cajitas)
+    rad_max = cajitas÷2
 
     #Si la distancia es negativa la periodicidad la vuelve positiva, y viceversa.
     if x_ij > rad_max
@@ -50,17 +48,18 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
         z_ij += cajitas
     end
 
-    x_ij = entero_a_flotante(x_ij, lado_caja, cajitas)
-    y_ij = entero_a_flotante(y_ij, lado_caja, cajitas)
-    z_ij = entero_a_flotante(z_ij, lado_caja, cajitas)
+    #Pasamos a flotantes para el cálculo de la distancia y la fuerza
+    x_ij_float = entero_a_flotante(x_ij, lado_caja, cajitas)
+    y_ij_float = entero_a_flotante(y_ij, lado_caja, cajitas)
+    z_ij_float = entero_a_flotante(z_ij, lado_caja, cajitas)
 
-    r_ij = sqrt(x_ij^2 + y_ij^2 + z_ij^2)
+    r_ij = sqrt(x_ij_float^2 + y_ij_float^2 + z_ij_float^2)
 
     f_ij = fuerza(r_ij, radio_critico)
 
-    fx = f_ij * x_ij
-    fy = f_ij * y_ij
-    fz = f_ij * z_ij
+    fx = f_ij * x_ij_float
+    fy = f_ij * y_ij_float
+    fz = f_ij * z_ij_float
 
     h2 = h^2
 
@@ -78,21 +77,19 @@ function fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T}, i::T, 
     fuerzas[j] -= fzh
 end
 
-
 # Suponemos que todas las masas son iguales
-function vector_fuerzas{T<:Float64}(coord_enteras::Vector{Int64}, lado_caja::T,
-                                    cajitas::Int64, radio_critico::T, h::T)
-    #Coordenadas es el arreglo con las posiciones X = (x1,y1,z1, x2,y2,z2, ...)
-    largo = length(coord_enteras)
-    suma_fuerzas = zeros(Int64, largo)
+function vector_fuerzas!{T<:Int64}(zonas::Array{Vector{T},3}, fuerzas::Vector{T}, coord_enteras::Vector{T},
+                                      vecindario::Vector{T}, largo_coord::T, lado_caja::Float64, cajitas::T,
+                                          radio_critico::Float64, rc_entero::T, divisiones::T, h::Float64)
+    #Coordenadas (coord_enteras) es el arreglo con las posiciones X = (x1,y1,z1, x2,y2,z2, ...)
 
-    divisiones = Int64(cld(lado_caja, radio_critico))
+    for i in eachindex(fuerzas); fuerzas[i] = 0; end #Un nuevo vector de fuerzas en cada paso temporal.
 
-    zonas = teselador_mat(coord_enteras, divisiones, cajitas)
+    teselador_mat!(zonas, coord_enteras, largo_coord, rc_entero) #Actualiza la matriz de zonas.
 
     for m = 1:divisiones, n = 1:divisiones, l = 1:divisiones
         zona = zonas[m,n,l]
-        vecindario = vecinos(zonas,m,n,l)
+        vecinos!(vecindario, zonas, m, n, l) # Actualiza el arreglo que contiene los vecinos.
 
         #Aquí aseguramos que las fuerzas dentro de zona sólo se calculen una ocasión.
         #Si ambas partículas están dentro de zona hay que imponer i<j para lo anterior.
@@ -100,15 +97,14 @@ function vector_fuerzas{T<:Float64}(coord_enteras::Vector{Int64}, lado_caja::T,
 
             for j in zona
                 if i<j  #Para no calcular dos veces la misma fuerza.
-                    fuerzas!(suma_fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
+                    fuerzas!(fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
                 end
             end
-            
-            #Si en cambio una está en zona y la otra en vecinos i<j no es necesario.
+
+            #Si en cambio una partícula está en zona y la otra en vecinos, i<j no es necesario.
             for j in vecindario
-                fuerzas!(suma_fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
+                fuerzas!(fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
             end
         end
     end
-    suma_fuerzas
 end
