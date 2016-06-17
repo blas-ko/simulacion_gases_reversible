@@ -68,7 +68,7 @@ function vector_fuerzas!{T<:Int64}(fuerzas::Vector{T}, coord_enteras::Vector{T},
     #Un nuevo vector de fuerzas en cada paso temporal.
     for k in eachindex(fuerzas); fuerzas[k] = 0; end
 
-    for i in 3:3:largo_coord, j in i:3:largo_coord
+    for i in 3:3:largo_coord-3, j in i+3:3:largo_coord
         fuerzas_clasico!(fuerzas, coord_enteras, i, j, cajitas, lado_caja, radio_critico, h)
     end
 end
